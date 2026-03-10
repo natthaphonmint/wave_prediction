@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecast Result</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f0f4f8; padding: 20px; text-align: center; }
+        .result-card { background: white; max-width: 700px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .status-box { background: #dff9fb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #c7ecee; }
+        h1 { color: #2c3e50; }
+        
+        /* ตาราง Safety Logic */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #3498db; color: white; }
+        
+        /* Highlight แถวที่ผลลัพธ์ออก (สมมติว่าเป็น Level 3) */
+        .highlight { background-color: #ffeaa7; font-weight: bold; border: 2px solid #fdcb6e; }
+        
+        .btn-back { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="result-card">
+        <h1>🌊 Forecast Result</h1>
+        
+        <div class="status-box">
+            <h3>Predicted Wave Height: 0.85 m</h3>
+            <h2 style="color: #d35400;">Condition: Slight (เล็กน้อย)</h2>
+        </div>
+
+        <h4>Safety Logic Check Criteria</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Wave Height (m)</th>
+                    <th>Wave Condition</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>0.0 - 0.10</td><td>Calm</td></tr>
+                <tr><td>2</td><td>0.10 - 0.50</td><td>Smooth</td></tr>
+                <tr class="highlight"> <td>3</td><td>0.50 - 1.25</td><td>Slight (Selected)</td>
+                </tr>
+                <tr><td>4</td><td>1.25 - 2.50</td><td>Moderate</td></tr>
+                <tr><td>5</td><td>2.50 - 4.00</td><td>Rough</td></tr>
+            </tbody>
+        </table>
+
+        <br>
+        <a href="input_form.html" class="btn-back">⬅ Run Model Again</a>
+    </div>
+
+</body>
+</html>
