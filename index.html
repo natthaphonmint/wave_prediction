@@ -119,6 +119,8 @@
 <script>
     let myChart = null;
     let currentCalculatedHeight = 0;
+    // ✅ เพิ่มตัวแปรเก็บ shap_values จาก Backend
+    let currentShapValues = {};
 
     async function startProcess() {
         var locSelect = document.getElementById("location");
@@ -154,6 +156,9 @@
             });
             const result = await response.json();
             currentCalculatedHeight = result.wave_height.toFixed(2);
+
+            // ✅ เก็บ shap_values จาก Backend ไว้ใช้วาดกราฟ
+            currentShapValues = result.shap_values || {};
 
             document.getElementById("loadingSection").style.display = "none";
             document.getElementById("outputSection").style.display = "block";
@@ -201,24 +206,75 @@
         const ctx = document.getElementById('shapChart').getContext('2d');
         if (myChart != null) { myChart.destroy(); }
 
-        let v1 = (Math.random() * 0.6) + 0.1;
-        let v2 = (Math.random() * 0.4) + 0.1;
-        let v3 = (Math.random() * 0.3);
-        let v4 = (Math.random() * 0.1) - 0.1; 
-        let v5 = (Math.random() * 0.05);
+        // ✅ ชื่อ label ที่แสดงในกราฟ ตรงกับ key ใน shap_values จาก Backend
+        const featureLabels = {
+            u10:            '10m U-Wind',
+            v10:            '10m V-Wind',
+            wind_gust:      'Wind Gust',
+            swh_wind:       'Wind Waves Hgt',
+            swh_swell:      'Swell Hgt',
+            wave_period:    'Wave Period',
+            wave_direction: 'Wave Direction',
+            temp_2m:        '2m Temperature',
+            sst:            'Sea Surf. Temp'
+        };
+
+        // ✅ ดึงค่าจาก currentShapValues ที่รับมาจาก Backend
+        const labels = [];
+        const values = [];
+        const colors = [];
+        const colorPos = '#023e8a';
+        const colorNeg = '#ff6b6b';
+
+        for (const [key, label] of Object.entries(featureLabels)) {
+            if (currentShapValues.hasOwnProperty(key)) {
+                labels.push(label);
+                const val = parseFloat(currentShapValues[key]);
+                values.push(val);
+                // ✅ ค่าบวก = สีน้ำเงิน (เพิ่มความสูงคลื่น), ค่าลบ = สีแดง (ลดความสูงคลื่น)
+                colors.push(val >= 0 ? colorPos : colorNeg);
+            }
+        }
+
+        // ✅ fallback ถ้า Backend ไม่มี shap_values ส่งมา
+        if (labels.length === 0) {
+            document.querySelector('.shap-box').innerHTML = 
+                '<h3 style="margin-top:0;color:#2c3e50;font-size:1.2em;">📊 SHAP Plot: Feature Importance</h3>' +
+                '<p style="color:#546e7a;text-align:center;">ไม่มีข้อมูล SHAP สำหรับโมเดลนี้</p>';
+            return;
+        }
 
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Wind Waves Hgt', 'Combined Hgt', 'Wind Gust', 'u-comp wind', 'Swell Hgt'],
+                labels: labels,
                 datasets: [{
                     label: 'SHAP Value',
-                    data: [v1, v2, v3, v4, v5],
-                    backgroundColor: ['#023e8a', '#0077b6', '#0096c7', '#ff6b6b', '#90e0ef'],
+                    data: values,
+                    backgroundColor: colors,
                     borderWidth: 1
                 }]
             },
-            options: { indexAxis: 'y', responsive: true }
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const val = context.parsed.x.toFixed(4);
+                                return val >= 0 ? `+${val} (เพิ่มความสูงคลื่น)` : `${val} (ลดความสูงคลื่น)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'SHAP Value' }
+                    }
+                }
+            }
         });
     }
 
