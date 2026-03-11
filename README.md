@@ -1,1 +1,1 @@
-# 🌐 Web Application - Wave Prediction
+# 🤖 Web Application - Wave Prediction
